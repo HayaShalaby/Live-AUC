@@ -1,30 +1,88 @@
-import React from 'react';
+import React, { useLayoutEffect, useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 
-const ProfileScreen = () => {
+// Define navigation type
+type RootStackParamList = {
+  ProfileScreen: undefined;
+  SettingsScreen: undefined;
+};
+
+type ProfileScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'ProfileScreen'
+>;
+
+type UserProfile = {
+  username: string;
+  pfp: string;
+  points: string;
+  friends: string;
+  following: string;
+};
+
+const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const [profileData, setProfileData] = useState<UserProfile | null>(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>
+          <Ionicons name="settings-outline" size={24} color="#390000" style={{ marginRight: 15 }} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    // Fetch user data from the API
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch('https://e075-156-223-151-38.ngrok-free.app/api/user/profile/ref@aucegypt.edu');
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        setProfileData({
+          username: data.username.trim(),
+          pfp: data.pfp.trim(),
+          points: data.points.trim(),
+          friends: data.friends.trim(),
+          following: data.following.trim(),
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        
         {/* Profile Section */}
         <View style={styles.profileContainer}>
           <Image 
-            source={{ uri: 'https://via.placeholder.com/100' }}
+            source={{ uri: profileData?.pfp || 'https://e075-156-223-151-38.ngrok-free.app/api/user/profile/ref@aucegypt.edu' }}
             style={styles.profileImage}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.userName}>Mohamed El-Refai</Text>
+            <Text style={styles.userName}>{profileData?.username || 'User'}</Text>
             <View style={styles.userStats}>
               <View style={styles.statItem}>
-                <Text style={styles.statCount}>300</Text>
+                <Text style={styles.statCount}>{profileData?.points || '---'}</Text>
                 <Text style={styles.statLabel}>points</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statCount}>14</Text>
+                <Text style={styles.statCount}>{profileData?.friends || '---'}</Text>
                 <Text style={styles.statLabel}>friends</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statCount}>30</Text>
+                <Text style={styles.statCount}>{profileData?.following || '---'}</Text>
                 <Text style={styles.statLabel}>following</Text>
               </View>
             </View>
@@ -43,7 +101,7 @@ const ProfileScreen = () => {
   );
 };
 
-const EventCard = () => {
+const EventCard: React.FC = () => {
   return (
     <View style={styles.eventCard}>
       <Image 
@@ -60,6 +118,8 @@ const EventCard = () => {
   );
 };
 
+// Style definitions remain the same as in your original code
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -71,17 +131,17 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // Center horizontally within the screen
+    justifyContent: 'center',
     padding: 20,
   },
   profileImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginRight: 20, // Space between image and profile info
+    marginRight: 20,
   },
   profileInfo: {
-    alignItems: 'center', // Center the name and stats relative to the profile image
+    alignItems: 'center',
   },
   userName: {
     fontSize: 24,
@@ -94,7 +154,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
-    marginHorizontal: 20, // Space between each stat
+    marginHorizontal: 20,
   },
   statCount: {
     fontSize: 18,

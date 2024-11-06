@@ -1,18 +1,22 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-// import loginScreen from '.expo/app/pages/loginScreen';
+import { TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Link } from 'expo-router';
 
 export default function TabLayout() {
+  const navigation = useNavigation();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#A73E26', // Custom color for the active tab
-        tabBarInactiveTintColor: '#390000', // Custom color for inactive tabs
+        tabBarActiveTintColor: '#A73E26',
+        tabBarInactiveTintColor: '#6B3B24',
         tabBarStyle: {
-          backgroundColor: '#F5F1E3', // Background color of the tab bar
-          paddingBottom: 25, // Extra padding to stay above the safe area
-          paddingTop: 5,
-          height: 70, // Adjust height if needed
+          backgroundColor: '#F5F1E3',
+          paddingBottom: 22,
+          paddingTop: 10,
+          height: 70,
         },
       }}
     >
@@ -20,7 +24,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          headerShown: false, // Hide the top header for the Home screen
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" color={color} size={size} />
           ),
@@ -30,7 +34,7 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          headerShown: false, // Hide the top header for the Search screen
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" color={color} size={size} />
           ),
@@ -40,7 +44,12 @@ export default function TabLayout() {
         name="ProfileScreen"
         options={{
           title: 'Profile',
-          headerShown: false, // Hide the top header for the Profile screen
+          headerShown: true,
+          headerRight: () => (
+            <Link href="/pages/SettingsScreen" style={{ marginRight: 15 }}>
+              <Ionicons name="settings-outline" size={24} color="#390000" />
+            </Link>
+          ),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" color={color} size={size} />
           ),
