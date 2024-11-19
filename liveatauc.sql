@@ -1,19 +1,19 @@
-create schema liveatauc;
+-- create schema liveatauc;
 
-use liveatauc;
+-- use liveatauc;
 
-create table users(
-email varchar(50) not null primary key, 
-userName varchar(50) not null, 
-Fname varchar(50),
-Lname varchar(50), 
-major varchar(15) not null,
-friends int, 
-pfp varchar(100), 
-userPassword varchar(100), 
-phone int, 
-points int
-);
+-- create table users(
+-- email varchar(50) not null primary key, 
+-- userName varchar(50) not null, 
+-- Fname varchar(50),
+-- Lname varchar(50), 
+-- major varchar(15) not null,
+-- friends int, 
+-- pfp varchar(100), 
+-- userPassword varchar(100), 
+-- phone int, 
+-- points int
+-- );
 
 create table Interest(
 userEmail varchar(50) not null,
