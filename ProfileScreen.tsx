@@ -118,8 +118,6 @@ const EventCard: React.FC = () => {
   );
 };
 
-// Style definitions remain the same as in your original code
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
