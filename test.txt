@@ -1,1 +1,1 @@
-ref@aucegypt.edu, refai, https://www.aucegypt.edu/sites/default/files/styles/xlarge/public/2024-01/Driven-V3.jpg?itok=X1o6Z5je, 320, 100, 50
+ref@aucegypt.edu, refai, https://www.aucegypt.edu/sites/default/files/styles/xlarge/public/2024-01/Driven-V3.jpg?itok=X1o6Z5je, 350, 200, 22
