@@ -1,5 +1,14 @@
 import React, { useLayoutEffect, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +35,10 @@ type UserProfile = {
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const [profileData, setProfileData] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
+  // Update navigation options
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -37,57 +49,78 @@ const ProfileScreen: React.FC = () => {
     });
   }, [navigation]);
 
+  // Fetch profile data
   useEffect(() => {
-    // Fetch user data from the API
     const fetchProfileData = async () => {
       try {
-        const response = await fetch('https://e075-156-223-151-38.ngrok-free.app/api/user/profile/ref@aucegypt.edu');
+        const response = await fetch('http://172.20.10.5:5000/api/user/profile/john.doe@aucegypt.edu'); // Update with your machine's IP
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
         }
         const data = await response.json();
+        console.log('Fetched Data:', data); // Debugging log
         setProfileData({
-          username: data.username.trim(),
-          pfp: data.pfp.trim(),
-          points: data.points.trim(),
-          friends: data.friends.trim(),
-          following: data.following.trim(),
+          username: data.username?.trim() || '',
+          pfp: data.pfp?.trim() || '',
+          points: data.points?.trim() || '',
+          friends: data.friends?.trim() || '',
+          following: data.following?.trim() || '',
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
+        setErrorMessage('Failed to load profile data.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProfileData();
   }, []);
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#390000" />
+      </SafeAreaView>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* Profile Section */}
-        <View style={styles.profileContainer}>
-          <Image 
-            source={{ uri: profileData?.pfp || 'https://e075-156-223-151-38.ngrok-free.app/api/user/profile/ref@aucegypt.edu' }}
-            style={styles.profileImage}
-          />
-          <View style={styles.profileInfo}>
-            <Text style={styles.userName}>{profileData?.username || 'User'}</Text>
-            <View style={styles.userStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statCount}>{profileData?.points || '---'}</Text>
-                <Text style={styles.statLabel}>points</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statCount}>{profileData?.friends || '---'}</Text>
-                <Text style={styles.statLabel}>friends</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statCount}>{profileData?.following || '---'}</Text>
-                <Text style={styles.statLabel}>following</Text>
+        {profileData && (
+          <View style={styles.profileContainer}>
+            <Image
+              source={{ uri: profileData.pfp || 'http://172.20.10.5:5000/api/user/profile/john.doe@aucegypt.edu' }} // Fallback image
+              style={styles.profileImage}
+            />
+            <View style={styles.profileInfo}>
+              <Text style={styles.userName}>{profileData.username}</Text>
+              <View style={styles.userStats}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statCount}>{profileData.points}</Text>
+                  <Text style={styles.statLabel}>points</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statCount}>{profileData.friends}</Text>
+                  <Text style={styles.statLabel}>friends</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statCount}>{profileData.following}</Text>
+                  <Text style={styles.statLabel}>following</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
 
         {/* Events Section */}
         <Text style={styles.sectionTitle}>Events attended</Text>
@@ -104,8 +137,10 @@ const ProfileScreen: React.FC = () => {
 const EventCard: React.FC = () => {
   return (
     <View style={styles.eventCard}>
-      <Image 
-        source={{ uri: 'https://huss.aucegypt.edu/sites/huss.aucegypt.edu/files/styles/banner/public/2023-10/220925_11303.jpg?itok=FKzPfbYh' }}
+      <Image
+        source={{
+          uri: 'https://huss.aucegypt.edu/sites/huss.aucegypt.edu/files/styles/banner/public/2023-10/220925_11303.jpg?itok=FKzPfbYh',
+        }}
         style={styles.eventImage}
       />
       <View style={styles.eventDetails}>
@@ -199,6 +234,12 @@ const styles = StyleSheet.create({
   },
   eventPrice: {
     color: '#390000',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
