@@ -341,6 +341,22 @@ def get_user_interests_route(userEmail):
         print(f"Error fetching interests for user {userEmail}: {e}")
         return jsonify({"error": "An error occurred while fetching interests."}), 500
 
+@app.route('/api/recommendations/<string:userEmail>', methods=['GET'])
+def get_recommendations(userEmail):
+    try:
+        student = Student(userEmail)
+
+        # Mock recommended events (replace with a call to search events function)
+        recommended_events = [1, 2, 3, 4, 5]
+
+        # Filter out attended events
+        filtered_events = student.filterEvents(recommended_events)
+
+        return jsonify({"recommendedEvents": filtered_events}), 200
+    except Exception as e:
+        print(f"Error fetching recommendations for user {userEmail}: {e}")
+        return jsonify({"error": "An error occurred while fetching recommendations"}), 500
+
 
 # Run app 
 if __name__ == '__main__':
