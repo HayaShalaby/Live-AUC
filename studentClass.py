@@ -225,6 +225,39 @@ class Student:
             if self.connection:
                 self.connection.close()
                 
+     def filterEvents(self, recommended_events):
+        try:
+            if not self.cursor:
+                print("Database connection not established.")
+                return []
+
+            # Step 1: Get all event_ids the user has attended
+            attended_events_query = """
+            SELECT event_id 
+            FROM bkuitdpmiddscdp4bt05.Event_attendees 
+            WHERE userEmail = %s
+            """
+            self.cursor.execute(attended_events_query, (self.Email,))
+            attended_event_ids = self.cursor.fetchall()  # Fetch all attended event IDs
+
+            # Flatten the result into a list of attended event IDs
+            attended_event_ids = {row[0] for row in attended_event_ids}  # Use a set for faster lookups
+
+            # Step 2: Filter recommended events by excluding attended ones
+            filtered_events = [
+                event for event in recommended_events if event not in attended_event_ids
+            ]
+
+            return filtered_events
+        except Exception as e:
+            print(f"Error filtering events for user {self.Email}: {e}")
+            return []
+        finally:
+            if self.cursor:
+                self.cursor.close()
+            if self.connection:
+                self.connection.close()
+                
     # Method to close the database connection when done
     def close_connection(self):
         if self.cursor:
