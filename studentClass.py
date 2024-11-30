@@ -331,7 +331,36 @@ class Student:
             print(f"Error generating recommended events for user {self.Email}: {e}")
             return []
 
+    def save_interest(self, user_email, interest):
+        try:
+            # Check if the interest is valid
+            if not interest.strip():
+                return {"status": "error", "message": "Interest cannot be empty."}
 
+            # Check for duplicates in the database
+            check_query = """
+                SELECT * FROM Interests WHERE user_email = %s AND interest = %s
+            """
+            self.cursor.execute(check_query, (user_email, interest.strip()))
+            existing_interest = self.cursor.fetchone()
+
+            if existing_interest:
+                return {"status": "error", "message": "Interest already exists for this user."}
+
+            # Insert new interest into the database
+            insert_query = """
+                INSERT INTO Interests (user_email, interest) VALUES (%s, %s)
+            """
+            self.cursor.execute(insert_query, (user_email, interest.strip()))
+            self.connection.commit()
+
+            return {"status": "success", "message": "Interest saved successfully."}
+        except Exception as e:
+            print(f"Error saving interest: {e}")
+            return {"status": "error", "message": "Failed to save interest."}
+        finally:
+            self.cursor.close()
+            self.connection.close()
 
     # Method to close the database connection when done
     def close_connection(self):
