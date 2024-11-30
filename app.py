@@ -314,6 +314,24 @@ def get_user_info():
         return jsonify(session['user_info'])
     return jsonify({"error": "No user is logged in"}), 401
 
+# Recommendation Algorithm that calls all helper functions
+@app.route('/api/user/recommendedEvents/<string:userEmail>', methods=['GET'])
+def get_recommended_events_route(userEmail):
+    try:
+        # Create an instance of the Student class with the user's email
+        student = Student(userEmail)
+
+        # Call the get_recommended_events method to get recommended events for the user
+        recommended_events = student.get_recommended_events()
+
+        if recommended_events:
+            return jsonify({"recommendedEvents": recommended_events}), 200
+        else:
+            return jsonify({"message": "No recommended events found for this user."}), 404
+    except Exception as e:
+        print(f"Error fetching recommended events for user {userEmail}: {e}")
+        return jsonify({"error": "An error occurred while fetching recommended events."}), 500
+
 
 @app.route('/api/user/interests/<string:userEmail>', methods=['GET'])
 def get_user_interests_route(userEmail):
