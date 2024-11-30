@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Alert, Button, TextInput } from 'react-native';
+import axios from 'axios';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  Home: undefined;
+  // Add other screen names if needed
+};
+
+type ChooseInterestsNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
+interface ChooseInterestsProps {
+  navigation: ChooseInterestsNavigationProp;
+}
+
+const ChooseInterests: React.FC<ChooseInterestsProps> = ({ navigation }) => {
+  const eventCategories = [
+    { id: "1", name: "Workshops" },
+    { id: "2", name: "Sports Events" },
+    { id: "3", name: "Cultural Events" },
+    { id: "4", name: "Tech Talks" },
+    { id: "5", name: "Music Concerts" },
+    { id: "6", name: "Career Fairs" },
+  ];
+
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]); // Explicitly define the type
+  const [customInterest, setCustomInterest] = useState<string>(''); // Define as string
+  const user_email = "alice.jones@aucegypt.edu"; // Replace with actual logged-in user's email
+
+  const toggleInterest = (id: string) => { // Make sure the id is treated as a string
+    if (selectedInterests.includes(id)) {
+      setSelectedInterests(selectedInterests.filter((interestId) => interestId !== id));
+    } else {
+      setSelectedInterests([...selectedInterests, id]);
+    }
+  };
+
+  const handleAddCustomInterest = () => {
+    if (customInterest.trim()) {
+      setSelectedInterests([...selectedInterests, customInterest]);
+      setCustomInterest('');
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (selectedInterests.length < 3) {
+      Alert.alert("Error", "Please select at least 3 interests.");
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/api/user/interests', {
+        user_email: user_email,
+        interests: selectedInterests,
+      });
+
+      if (response.data.status === "success") {
+        Alert.alert("Success", "Your preferences have been saved!");
+        navigation.navigate("Home"); // Redirect to homepage or event feed
+      } else {
+        Alert.alert("Error", response.data.message || "Failed to save preferences.");
+      }
+    } catch (error) {
+      console.error("Error saving interests:", error);
+      Alert.alert("Error", "An error occurred while saving your preferences.");
+    }
+  };
+
+  const renderCategory = ({ item }: { item: { id: string; name: string } }) => { // Define the item type explicitly
+    const isSelected = selectedInterests.includes(item.id);
+    return (
+      <TouchableOpacity
+        style={[styles.categoryItem, isSelected && styles.selectedCategory]}
+        onPress={() => toggleInterest(item.id)}
+      >
+        <Text style={[styles.categoryText, isSelected && styles.selectedText]}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Choose Your Interests</Text>
+      <FlatList
+        data={eventCategories}
+        keyExtractor={(item) => item.id}
+        renderItem={renderCategory}
+        style={styles.list}
+      />
+      
+      <TextInput
+        style={styles.input}
+        value={customInterest}
+        onChangeText={setCustomInterest}
+        placeholder="Add more interests (optional)"
+      />
+      <Button title="Add Custom Interest" onPress={handleAddCustomInterest} />
+      
+      <Button title="Save Preferences" onPress={handleSubmit} />
+    </View>
+  );
+};
+
+const styles = {
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: '#fff',
+    },
+    header: {
+      fontSize: 24,
+      fontWeight: 'bold' as 'bold', // Ensure 'bold' is explicitly typed
+      marginBottom: 20,
+    },
+    list: {
+      marginBottom: 20,
+    },
+    categoryItem: {
+      padding: 12,
+      marginBottom: 10,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 8,
+    },
+    selectedCategory: {
+      backgroundColor: '#A73E26',
+    },
+    categoryText: {
+      fontSize: 18,
+    },
+    selectedText: {
+      color: '#fff',
+    },
+    input: {
+      height: 40,
+      borderColor: '#ccc',
+      borderWidth: 1,
+      marginBottom: 10,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+    },
+  };
+  
+export default ChooseInterests;
