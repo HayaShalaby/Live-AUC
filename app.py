@@ -359,7 +359,26 @@ def get_user_interests_route(userEmail):
         print(f"Error fetching interests for user {userEmail}: {e}")
         return jsonify({"error": "An error occurred while fetching interests."}), 500
 
+@app.route('/api/user/interests', methods=['POST'])
+def add_interest():
+    data = request.get_json()
+    print(f"Received data: {data}")  # Debug log
 
+    # Extract user data
+    user_email = data.get('user_email')
+    interest = data.get('interest')
+
+    if not user_email or not interest:
+        return jsonify({"status": "error", "message": "user_email and interest are required."}), 400
+
+    # Create a Student instance using the user_email
+    student = Student(user_email)
+
+    # Save the interest using the user_email directly
+    response = student.save_interest(user_email, interest)
+
+    return jsonify(response)
+    
 # Run app 
 if __name__ == '__main__':
     app.run(debug=True)
