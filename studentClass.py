@@ -5,7 +5,7 @@ from mysql.connector import Error
 # Using database connection
 from db import get_connection
 
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -143,17 +143,24 @@ class Student:
         except Error as e:
             return f"Error while updating record: {e}", 500  # Return error message with status code
 
-    def updatePFP(self, pfp, email):
-        """Update a specific column value in the database."""
-        sql_update_query = """UPDATE users SET column_name = %s WHERE id = %s"""
-        data_to_update = (pfp, email)
+    def upload_profile_picture(self):
+        data = request.get_json()  # Get the JSON data from the request body
 
+        if 'pfp' not in data:
+            return jsonify({"error": "No profile picture parameter provided"}), 400
+
+        base64_image = data['pfp']  # Extract the Base64 string
+
+        # Store the Base64 string in the database
         try:
-            self.cursor.execute(sql_update_query, data_to_update)
+            sql_query = """UPDATE users SET pfp = %s WHERE email = %s"""
+            self.cursor.execute(sql_query, (base64_image, 'user@example.com'))  # Use the actual email here
             self.connection.commit()
-            print("Record updated successfully")
-        except Error as e:
-            print("Error while updating record:", e)
+
+            return jsonify({"message": "Profile picture uploaded successfully!"}), 200
+        except Exception as e:
+            return jsonify({"error": f"Error uploading image: {str(e)}"}), 500
+
 
     # Not implemented for sprint 1 
     def saveEvent(self):
