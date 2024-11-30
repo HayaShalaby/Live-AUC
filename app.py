@@ -362,20 +362,15 @@ def get_user_interests_route(userEmail):
 @app.route('/api/user/interests', methods=['POST'])
 def add_interest():
     data = request.get_json()
-    print(f"Received data: {data}")  # Debug log
-
-    # Extract user data
     user_email = data.get('user_email')
-    interest = data.get('interest')
+    interests = data.get('interests')
 
-    if not user_email or not interest:
-        return jsonify({"status": "error", "message": "user_email and interest are required."}), 400
+    if not user_email or not interests or len(interests) < 3:
+        return jsonify({"status": "error", "message": "user_email and at least 3 interests are required."}), 400
 
-    # Create a Student instance using the user_email
+    # Create a Student instance and save the interests
     student = Student(user_email)
-
-    # Save the interest using the user_email directly
-    response = student.save_interest(user_email, interest)
+    response = student.save_interests(user_email, interests)
 
     return jsonify(response)
     
