@@ -118,7 +118,6 @@ def get_events():
     else:
         return jsonify({"error": "Database connection failed"}), 500
 
-
 # Return info for specific event
 @app.route('/api/events/specificEvent/<int:event_id>', methods=['GET'])
 def load_event_details(event_id):
@@ -181,6 +180,12 @@ def updateUsername(userEmail, userName):
     
     # Return the response with the appropriate message and status code
     return jsonify({"message": message}), status_code
+
+# Caller function to update username for app settings     
+@app.route('/api/user/updateUserName/<string:userEmail>', methods=['POST'])
+def updatePFP(userEmail):
+    student = Student(userEmail)
+    return student.upload_profile_picture()  
 
 # Caller function to return event search results 
 db_manager = dbMgr(get_connection)
