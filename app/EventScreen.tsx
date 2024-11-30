@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import * as Calendar from 'expo-calendar';
+import axios from 'axios'; // For API calls
 
 const EventScreen: React.FC = () => {
   const router = useRouter();
@@ -27,11 +28,11 @@ const EventScreen: React.FC = () => {
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
       ),
-      headerTitle: 'Event Details', // Set custom title
+      headerTitle: 'Event Details',
       headerStyle: {
-        backgroundColor: '#F5F1E3', // Light beige background for the header
+        backgroundColor: '#F5F1E3',
       },
-      headerTintColor: '#6B3B24', // Ensure other icons/text in the header match your brown palette
+      headerTintColor: '#6B3B24',
     });
   }, [navigation]);
 
@@ -44,6 +45,7 @@ const EventScreen: React.FC = () => {
   };
 
   // Extract values from params safely
+  const event_id = getStringValue(params.event_id);
   const event_name = getStringValue(params.event_name);
   const event_date = getStringValue(params.event_date);
   const event_price = getStringValue(params.event_price);
@@ -55,20 +57,26 @@ const EventScreen: React.FC = () => {
   const eventImage = displayPic || 'https://via.placeholder.com/150';
   const eventDescription = description || 'No description available';
 
-  useEffect(() => {
-    const getPermissions = async () => {
-      const { status: calendarStatus } = await Calendar.requestCalendarPermissionsAsync();
-      const { status: remindersStatus } = await Calendar.requestRemindersPermissionsAsync();
+  const handleCheckAvailability = async () => {
+    try {
+      // Call the backend API to check availability
+      const response = await axios.get(`http://127.0.0.1:5000/api/events/availability/${event_id}`);
 
-      if (calendarStatus !== 'granted' || remindersStatus !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'Please allow calendar and reminders access to add events.'
-        );
+      if (!response.data.seatsAvailable) {
+        Alert.alert('Event Fully Booked', 'This event is fully booked. Please check back later.');
+        return;
       }
-    };
-    getPermissions();
-  }, []);
+
+      // Navigate to the registration screen if seats are available
+      router.push({
+        pathname: '/RegistrationScreen',
+        params: { event_id }, // Pass event ID to the registration screen
+      });
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      Alert.alert('Error', 'An error occurred while checking event availability.');
+    }
+  };
 
   const addToCalendar = async () => {
     try {
@@ -94,7 +102,7 @@ const EventScreen: React.FC = () => {
         endDate: new Date(new Date(formattedEventDate).getTime() + 60 * 60 * 1000), // +1 hour
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         notes: eventDescription,
-        location: 'Event location if available', // Replace with event location if applicable
+        location: 'Event location if available',
       });
 
       if (eventId) {
@@ -149,17 +157,7 @@ const EventScreen: React.FC = () => {
         <TouchableOpacity style={styles.button} onPress={addToCalendar}>
           <Text style={styles.buttonText}>Add to Calendar</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() =>
-            router.push({
-              pathname: '/RegistrationScreen',
-              params: {
-                event_id: params.event_id,
-              },
-            })
-          }
-        >
+        <TouchableOpacity style={styles.button} onPress={handleCheckAvailability}>
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
@@ -171,20 +169,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F1E3',
-  },customBackButton: {
+  },
+  customBackButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#6B3B24', // Brown background for the back button
+    backgroundColor: '#6B3B24',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    marginLeft: 1, // Adjust this value to move the button closer to the left
   },
   backButtonText: {
-    color: '#FFF', // Text color for back button
+    color: '#FFF',
     fontSize: 16,
     marginLeft: 8,
-  }, topRightIcon: {
+  },
+  topRightIcon: {
     position: 'absolute',
     top: 20,
     right: 20,
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
   attendanceContainer: {
     marginTop: 16,
     paddingHorizontal: 16,
-    marginBottom: 32, // Adds space between the "Who's Attending" section and the buttons
+    marginBottom: 32,
   },
   attendanceTitle: {
     fontSize: 16,
@@ -250,9 +249,9 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   button: {
-    backgroundColor: '#6B3B24', // Unified button color
-    flex: 1, // Equal size for buttons
-    marginHorizontal: 8, // Space between buttons
+    backgroundColor: '#6B3B24',
+    flex: 1,
+    marginHorizontal: 8,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
