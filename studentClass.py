@@ -144,6 +144,7 @@ class Student:
             return f"Error while updating record: {e}", 500  # Return error message with status code
 
     def upload_profile_picture(self):
+
         data = request.get_json()  # Get the JSON data from the request body
 
         if 'pfp' not in data:
@@ -154,7 +155,7 @@ class Student:
         # Store the Base64 string in the database
         try:
             sql_query = """UPDATE users SET pfp = %s WHERE email = %s"""
-            self.cursor.execute(sql_query, (base64_image, 'user@example.com'))  # Use the actual email here
+            self.cursor.execute(sql_query, (base64_image, self.Email))  # Use the actual email here
             self.connection.commit()
 
             return jsonify({"message": "Profile picture uploaded successfully!"}), 200
