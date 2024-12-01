@@ -181,8 +181,8 @@ def updateUsername(userEmail, userName):
     # Return the response with the appropriate message and status code
     return jsonify({"message": message}), status_code
 
-# Caller function to update username for app settings     
-@app.route('/api/user/updateUserName/<string:userEmail>', methods=['POST'])
+# Caller function to update PFP for app settings     
+@app.route('/api/user/updatePFP/<string:userEmail>', methods=['POST'])
 def updatePFP(userEmail):
     student = Student(userEmail)
     return student.upload_profile_picture()  
